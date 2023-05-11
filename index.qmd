@@ -1,0 +1,594 @@
+---
+title: Internship Project
+subtitle: Exploring Open Traffic Datasets in the UK
+author: "Juan P. Fonseca-Zamora"
+institute: Data Analytics and Society | University of Leeds
+format: 
+  revealjs:
+    theme: theme.css
+    smaller: true
+    scrollable: true
+---
+
+# Overview {background-color="#006dae"}
+
+## Scope of the Datasets
+
+11 identified datasets [^1]
+
+[^1]: National Highways and Telraam not showed
+
+```{r}
+
+  library(tidyverse)
+  library(tmap)
+  library(geojsonsf)
+  library(sf)
+
+source("map_function.R",local = F)
+
+myfiles = list.files(path = "../OSM_metrics/03_maps/",pattern = "points_")
+
+list_cities = gsub(pattern = ".geojson",
+                   replacement = "",
+                   gsub(x = myfiles,
+                        pattern = "points_",
+                        ""))
+
+list_cities = list_cities[list_cities != "National Highways"]
+
+
+all_polygons = do.call(rbind,lapply(list_cities,function(x){
+  tpolygon = geojsonsf::geojson_sf(paste0("../OSM_metrics/03_maps/polygon_", x, ".geojson"))
+  st_crs(tpolygon) = 27700
+  return(tpolygon)
+}))
+
+tmap_mode("view")
+
+tm_shape(all_polygons)+
+  tm_polygons(col = "name",alpha = 0.5)
+
+
+```
+
+## Highlights
+
+-   Varying resolution:
+    -   AADF and Hourly traffic the most common
+    -   Coarse vehicle classification/non consistent
+    -   Directional data available
+-   Types of sensors:
+    -   Induction Loops are the most common
+-   Update frequency:
+    -   Monthly uploads but not consistent
+    -   Hull is the only real-time feed
+-   Access:
+    -   Through web/API without authentication
+    -   West Essex only for exploring data
+    -   West Midlands, available on demand
+
+## Road network within monitoring areas
+
+![](images/box_plots_proportions.png){width="100%"}
+
+## Monitoring Area vs Number of sensors
+
+![](images/scatter.png){width="100%"}
+
+## Density of sensors by road class
+
+![](images/box_plots_ratios.png){width="100%"}
+
+# Datasets
+
+## Bradford {.smaller}
+
+::: footer
+[City of Bradford Data Hub](https://spatialdata-cbmdc.hub.arcgis.com/datasets/CBMDC::2018-traffic-count-data/about)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                                |
+|------------------------------|--------------------------------|
+| **Area:**                    | 231.76 km^2^                   |
+| **Number of sensors:**       | 62                             |
+| **Type of data/Resolution:** | Hourly Flows                   |
+| **Type of sensors:**         | Not Specified <br>(Ind. Loops) |
+| **Update frequency:**        | NA                             |
+| **Time period:**             | 2018                           |
+| **Direction:**               | Directional                    |
+|                              |                                |
+
+#### Sensor Density
+
+![](images/plot_Bradford.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Bradford.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Bradford")
+```
+:::
+
+## Brighton & Hove {.smaller}
+
+::: footer
+[www.brighton-hove.gov.uk](https://www.brighton-hove.gov.uk/parking-and-travel/counting-traffic-brighton-hove)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                                |
+|------------------------------|--------------------------------|
+| **Area:**                    | 56.24 km^2^                    |
+| **Number of sensors:**       | 24                             |
+| **Type of data/Resolution:** | AADF                           |
+| **Type of sensors:**         | Not Specified <br>(Ind. Loops) |
+| **Update frequency:**        | Annual                         |
+| **Time period:**             | 2019-2022                      |
+| **Direction:**               | Non-directional                |
+|                              |                                |
+
+#### Sensor Density
+
+![](images/plot_Brighton_&_Hove.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Brighton_&_Hove.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Brighton & Hove")
+```
+:::
+
+## Bristol {.smaller}
+
+::: footer
+[Open Data Bristol](https://opendata.bristol.gov.uk/explore/dataset/fact-traffic-counts/information/?disjunctive.countdevicedescription&disjunctive.link)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |               |
+|------------------------------|---------------|
+| **Area:**                    | 67.4 km^2^    |
+| **Number of sensors:**       | 496           |
+| **Type of data/Resolution:** | Hourly        |
+| **Type of sensors:**         | Ind. Loops    |
+| **Update frequency:**        | Not Specified |
+| **Time period:**             | 2020-2022     |
+| **Direction:**               | Directional   |
+|                              |               |
+
+#### Sensor Density
+
+![](images/plot_Bristol.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Bristol.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Bristol")
+```
+:::
+
+## Calderdale {.smaller}
+
+::: footer
+[DataWorks Carderdale](https://dataworks.calderdale.gov.uk/dataset/e5040/traffic-count)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                                    |
+|------------------------------|------------------------------------|
+| **Area:**                    | 124.9 km^2^                        |
+| **Number of sensors:**       | 8                                  |
+| **Type of data/Resolution:** | Monthly <br> Hourly (three months) |
+| **Type of sensors:**         | Ind. Loops                         |
+| **Update frequency:**        | Not Specified / Annual?            |
+| **Time period:**             | 1997-2022                          |
+| **Direction:**               | Directional                        |
+|                              |                                    |
+
+#### Sensor Density
+
+![](images/plot_Calderdale.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Calderdale.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Calderdale")
+```
+:::
+
+## Cambridge {.smaller}
+
+::: footer
+[CambridshireInsight](https://data.cambridgeshireinsight.org.uk/dataset/cambridge-city-smart-sensor-traffic-counts)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                               |
+|------------------------------|-------------------------------|
+| **Area:**                    | 15.1 km^2^                    |
+| **Number of sensors:**       | 18                            |
+| **Type of data/Resolution:** | Hourly                        |
+| **Type of sensors:**         | Vivacity (different versions) |
+| **Update frequency:**        | Not Specified                 |
+| **Time period:**             | 2019-2022                     |
+| **Direction:**               | Directional                   |
+|                              |                               |
+
+#### Sensor Density
+
+![](images/plot_Cambridge.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Cambridge.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Cambridge")
+```
+:::
+
+## Hull {.smaller}
+
+::: footer
+[Open Data Hull](https://opendata.hullcc.gov.uk/dataset/scoot-loop)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                       |
+|------------------------------|-----------------------|
+| **Area:**                    | 24.2 km^2^            |
+| **Number of sensors:**       | 284                   |
+| **Type of data/Resolution:** | Variable (\<Hourly)   |
+| **Type of sensors:**         | Ind. Loops            |
+| **Update frequency:**        | Real-time             |
+| **Time period:**             | 2020-Present          |
+| **Direction:**               | Directional (by lane) |
+|                              |                       |
+
+#### Sensor Density
+
+![](images/plot_Hull.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Hull.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Hull")
+```
+:::
+
+## Leeds {.smaller}
+
+::: footer
+[Data Mill North](https://datamillnorth.org/dataset/leeds-annual-traffic-growth)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                          |
+|------------------------------|--------------------------|
+| **Area:**                    | 398.5 km^2^              |
+| **Number of sensors:**       | 29                       |
+| **Type of data/Resolution:** | Hourly                   |
+| **Type of sensors:**         | Cameras                  |
+| **Update frequency:**        | Not Specified / Monthly? |
+| **Time period:**             | 1997-2022                |
+| **Direction:**               | Directional              |
+|                              |                          |
+
+#### Sensor Density
+
+![](images/plot_Leeds.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Leeds.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Leeds")
+```
+:::
+
+## North Yorkshire {.smaller}
+
+::: footer
+[Data North Yorkshire](https://datamillnorth.org/dataset/leeds-annual-traffic-growth)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |               |
+|------------------------------|---------------|
+| **Area:**                    | 6,866.8 km^2^ |
+| **Number of sensors:**       | 3,217         |
+| **Type of data/Resolution:** | AADF          |
+| **Type of sensors:**         | Ind. Loops    |
+| **Update frequency:**        | Not Specified |
+| **Time period:**             | 2000-2014     |
+| **Direction:**               | Directional   |
+|                              |               |
+
+#### Sensor Density
+
+![](images/plot_North_Yorkshire.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_North_Yorkshire.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("North Yorkshire")
+```
+:::
+
+## Oxfordshire {.smaller}
+
+::: footer
+[Oxfordshire.gov.uk](https://www.oxfordshire.gov.uk/residents/roads-and-transport/traffic/transport-monitoring)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                 |
+|------------------------------|-----------------|
+| **Area:**                    | 2,398.0 km^2^   |
+| **Number of sensors:**       | 435             |
+| **Type of data/Resolution:** | AADF            |
+| **Type of sensors:**         | Ind. Loops      |
+| **Update frequency:**        | Not Specified   |
+| **Time period:**             | 2019            |
+| **Direction:**               | Non-directional |
+|                              |                 |
+
+#### Sensor Density
+
+![](images/plot_Oxfordshire.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_Oxfordshire.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("Oxfordshire")
+```
+:::
+
+## West Midlands {.smaller}
+
+::: footer
+[Convex (Hosting Service)](https://convex.uk.com/#data-catalogue)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                    |
+|------------------------------|--------------------|
+| **Area:**                    | 97.0 km^2^         |
+| **Number of sensors:**       | 312                |
+| **Type of data/Resolution:** | Hourly             |
+| **Type of sensors:**         | Ind. Loops         |
+| **Update frequency:**        | Sample / real-time |
+| **Time period:**             | Unknown            |
+| **Direction:**               | Directional        |
+|                              |                    |
+
+#### Sensor Density
+
+![](images/plot_West_Midlands.png){fig-align="center" width="60%"}
+
+#### Road Network
+
+![](images/distplot_West_Midlands.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+my_map("West Midlands")
+```
+:::
+
+## National Highways
+
+::: footer
+[webTRIS](https://webtris.highwaysengland.co.uk/)
+:::
+
+::: panel-tabset
+### Summary
+
+|                              |                |
+|------------------------------|----------------|
+| **Area:**                    | 92,721.6 km^2^ |
+| **Number of sensors:**       | 11,169         |
+| **Type of data/Resolution:** | \<Hourly       |
+| **Type of sensors:**         | Ind. Loops     |
+| **Update frequency:**        | Daily          |
+| **Time period:**             | 2020-2022      |
+| **Direction:**               | Directional    |
+|                              |                |
+
+#### Sensor Density
+
+![](images/plot_National_Highways.png){fig-align="center" width="60%"}
+
+#### Road network
+
+![](images/distplot_National_Highways.png){fig-align="center" width="60%"}
+
+### Map
+
+```{r}
+library(tidyverse)
+  library(tmap)
+  library(geojsonsf)
+  library(sf)
+  library(sysfonts)
+  
+  polygon = geojson_sf(paste0("../OSM_metrics/03_maps/polygon_National Highways.geojson"))
+  
+  st_crs(polygon) = 27700
+  
+  sf_locations = geojson_sf(paste0("../OSM_metrics/03_maps/points_National Highways.geojson"))
+  
+  st_crs(sf_locations) = 27700
+  
+  
+  tmap_mode("view")
+  tm_shape(polygon) +
+    tm_fill(alpha = 0.3, col = "darkblue") +
+    tm_shape(sf_locations) +
+    tm_dots(col = "#3f3f3f")
+  
+  
+```
+:::
+
+# Bristol Detailed Analysis {background-color="#006dae"}
+
+## Data completeness (days)
+
+::: footer
+Data for an extract of 325 days
+:::
+
+::: panel-tabset
+### Distribution by type
+
+![](images/Briston_hist_days.png){width="100%"}
+
+### Spatial Distribution
+
+```{r}
+my_sites = read_rds("images/annual_data_mapping.rds") |> 
+  mutate(annual_data = 100*ndays/daysdiff) 
+
+tm_shape(my_sites)+
+  tm_dots(col = "annual_data",title = "Annual data [%]", palette = "magma")
+  
+```
+:::
+
+## Data completeness (daily data)
+
+::: footer
+Data for an extract of 325 days
+:::
+
+::: panel-tabset
+### Daily data by sensor and road class
+
+![](images/Briston_violing_days.png){width="100%"}
+
+### Spatial Distribution
+
+```{r}
+my_sites_d = read_rds("images/Daily_data_mapping.rds") |> 
+  mutate(dailydata = 100*dailydata) 
+
+tm_shape(my_sites_d)+
+  tm_dots(col = "dailydata",title = "Mean Daily data [%]", palette = "magma")
+
+```
+:::
+
+## Daily traffic
+
+::: footer
+Only data for days with more than 70% of the data
+:::
+
+::: panel-tabset
+### Distribution of AADF
+
+![](images/Bristol_hist_AADF.png)
+
+### Distribution of AADF by road Class
+
+![](images/Bristol_hist_AADF_roads.png)
+
+### Daily Profiles
+
+#### All days
+
+![](images/profiles.png)
+
+#### Weekdays
+
+![](images/profiles_wk.png)
+
+### Spatial Distribution
+
+```{r}
+my_sites_type = read_rds("images/annual_data_mapping.rds")  
+
+tm_shape(my_sites_type)+
+  tm_dots(col = "type",title = "Road Class", palette = rev(c("#ffb703",
+                             "#fd9e02",
+                             "#fb8500",
+                             "#8ecae6",
+                             "#219ebc",
+                             "#126782",
+                             "#023047")))
+```
+:::
+
+# Next Steps {background-color="#006dae"}
+
+## Rearch Project
+
+-   Internship
+-   Dissertation (Aug/2024)
+    -   Short Research
+    -   Publishable
+-   PhD
+    -   Proposal/Transfer (Sept/2024)
+    -   Research Papers
+-   Other collaboration
+    -   Co-authoring
+
+# Thank you! {background-color="#006dae"}
